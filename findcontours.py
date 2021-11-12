@@ -7,7 +7,7 @@ from random import random
 
 
 # open image convert to grayscale
-image = cv2.imread("test_drawings/test3.png")
+image = cv2.imread("test_drawings/training_out.png")
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 invert = cv2.bitwise_not(gray)
 
@@ -16,15 +16,16 @@ cnts = cv2.findContours(invert.copy(), cv2.RETR_EXTERNAL,
                         cv2.CHAIN_APPROX_SIMPLE)
 cnts = imutils.grab_contours(cnts)
 
-# array to capture line data
+# array to capture data
 lines = []
 words = {}
-weighted_averages = {}
 first_counted = False
-# x_sensitivity = 1
-# y_sensitivity = 1.9
-sensitivity = 1
-# x_weight = 0.4
+
+# x_sens and y_sens change ellipse parameters
+x_sens = 6
+y_sens = .5
+
+
 # loop over the contours
 for c in cnts:
     # compute the center of the contour
@@ -84,7 +85,8 @@ for c in cnts:
             x = word_key[0]
             y = word_key[1]
 
-            dist = np.sqrt((cX-x)**2 + abs(cY-y)**2)
+            # weighted euclidian distance
+            dist = np.sqrt((1/x_sens)*abs(cX-x)**2 + (1/y_sens)*abs(cY-y)**2)
 
             if dist < min_dist:
                 selected_key = word_key
@@ -105,56 +107,48 @@ for c in cnts:
         # if (cX > x-t and cX < x+t) and (cY > y-t and cY < y+t):
         #     print('within thresh x:'+str(cX)+' y:'+ str(cY))
         #     cv2.drawContours(image, [c], -1, (0, 255, 255), -1)
-
-        if min_dist < 100*sensitivity and first_counted:
+# min_dist < 100*sensitivity and
+        if min_dist < 50 and first_counted:
             words[selected_key].append(c)
         else:
             words[(cX, cY)] = [c]
             first_counted = True
 
-        for word in list(words.values()):
-            # color = (random()*255, random()*255, random()*255)
-            color = (0, 0, 255)
-            cv2.drawContours(image, word, -1, color, -1)
+        # for word in list(words.values()):
+        #     color = (random()*255, random()*255, random()*255)
+        #     # color = (0, 0, 0)
+        #     cv2.drawContours(image, word, -1, color, -1)
 
         # for key in words.keys():
         #     cv2.circle(image, key, 10, (255, 0, 0))
 
         # show the image
-        cv2.imshow("Image", image)
-        cv2.waitKey(0)
+        # cv2.imshow("Image", image)
+        # cv2.waitKey(0)
 
 
 i = 1
 for word in list(words.values()):
     cnts = np.concatenate(word)
     x, y, w, h = cv2.boundingRect(cnts)
-    cv2.rectangle(image, (x, y), (x + w - 1, y + h - 1), (150, 150, 150), 2)
+    # cv2.rectangle(image, (x, y), (x + w - 1, y + h - 1), (150, 150, 150), 2)
     image = np.array(image)
     roi = image[y:y+h, x:x+w]
-    # path = "training_data/output/output{}.png".format(i)
-    # cv2.imwrite(path, roi)
+
+    if int(224*(h/w)) <= 224:
+        new_height = int(224*(h/w))
+        roi_resized = cv2.resize(roi, (224, new_height))
+        roi_bordered = cv2.copyMakeBorder(roi_resized, int((224-new_height)/2), int(
+            (224-new_height)/2), 0, 0, cv2.BORDER_CONSTANT, value=(255, 255, 255))
+    else:
+        new_width = int(224*(w/h))
+        roi_resized = cv2.resize(roi, (new_width, 224))
+        roi_bordered = cv2.copyMakeBorder(roi_resized, 0, 0, int(
+            (224-new_width)/2), int((224-new_width)/2), cv2.BORDER_CONSTANT, value=(255, 255, 255))
+
+    path = "training_data/out/out{}.png".format(i)
+    cv2.imwrite(path, roi_bordered)
     i += 1
     cv2.imshow("Image", image)
     cv2.waitKey(0)
 
-# h, w, c = image.shape
-# boxes = pytesseract.image_to_boxes(image)
-# for b in boxes.splitlines():
-#     b = b.split(' ')
-#     image = cv2.rectangle(
-#         image, (int(b[1]), h - int(b[2])), (int(b[3]), h - int(b[4])), (0, 255, 0), 2)
-
-# cv2.imshow('image', image)
-# cv2.waitKey(0)
-
-# results = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT)
-# print(results)
-# custom_oem_psm_config = r'--oem 3 --psm 12'
-# data = pytesseract.image_to_string(image)
-# print(data)
-# results = pytesseract.image_to_data(rgb, output_type=Output.DICT)
-
-# show the output image
-# cv2.imshow("Image", image)
-# cv2.waitKey(0)
