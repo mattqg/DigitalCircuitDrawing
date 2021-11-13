@@ -1,20 +1,22 @@
-from os import link
-import imutils
+from imutils import grab_contours
 import cv2
 import numpy as np
-from random import random
-# import pytesseract
 
+
+input_name = "test3"
+output_name = "tests"
+starting_num = 1
+write_output = False
 
 # open image convert to grayscale
-image = cv2.imread("test_drawings/training_out.png")
+image = cv2.imread("test_drawings/" + input_name + ".png")
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 invert = cv2.bitwise_not(gray)
 
 # find contours in the thresholded image
 cnts = cv2.findContours(invert.copy(), cv2.RETR_EXTERNAL,
                         cv2.CHAIN_APPROX_SIMPLE)
-cnts = imutils.grab_contours(cnts)
+cnts = grab_contours(cnts)
 
 # array to capture data
 lines = []
@@ -24,6 +26,22 @@ first_counted = False
 # x_sens and y_sens change ellipse parameters
 x_sens = 6
 y_sens = .5
+
+
+def show_image():
+    screen_res = 1280, 720
+    scale_width = screen_res[0] / image.shape[1]
+    scale_height = screen_res[1] / image.shape[0]
+    scale = min(scale_width, scale_height)
+    #resized window width and height
+    window_width = int(image.shape[1] * scale)
+    window_height = int(image.shape[0] * scale)
+    #cv2.WINDOW_NORMAL makes the output window resizealbe
+    cv2.namedWindow('Resized Window', cv2.WINDOW_NORMAL)
+    #resize the window according to the screen resolution
+    cv2.resizeWindow('Resized Window', window_width, window_height)
+    cv2.imshow('Resized Window', image)
+    cv2.waitKey(0)
 
 
 # loop over the contours
@@ -123,15 +141,12 @@ for c in cnts:
         #     cv2.circle(image, key, 10, (255, 0, 0))
 
         # show the image
-        # cv2.imshow("Image", image)
-        # cv2.waitKey(0)
+        # show_image()
 
 
-i = 1
 for word in list(words.values()):
     cnts = np.concatenate(word)
     x, y, w, h = cv2.boundingRect(cnts)
-    # cv2.rectangle(image, (x, y), (x + w - 1, y + h - 1), (150, 150, 150), 2)
     image = np.array(image)
     roi = image[y:y+h, x:x+w]
 
@@ -146,9 +161,11 @@ for word in list(words.values()):
         roi_bordered = cv2.copyMakeBorder(roi_resized, 0, 0, int(
             (224-new_width)/2), int((224-new_width)/2), cv2.BORDER_CONSTANT, value=(255, 255, 255))
 
-    path = "training_data/out/out{}.png".format(i)
-    cv2.imwrite(path, roi_bordered)
-    i += 1
-    cv2.imshow("Image", image)
-    cv2.waitKey(0)
+    if write_output:
+        path = "training_data/" + output_name + "/" + output_name + "{}.png".format(starting_num)
+        cv2.imwrite(path, roi_bordered)
+        starting_num += 1
+    else:
+        cv2.rectangle(image, (x, y), (x + w - 1, y + h - 1), (150, 150, 150), 2)
 
+    show_image()
