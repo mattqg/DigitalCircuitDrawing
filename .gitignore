@@ -1,0 +1,8 @@
+test_drawings
+training_data
+venv
+__pycache__
+*.zip
+*.board
+*.js
+*.json
