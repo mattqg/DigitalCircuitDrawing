@@ -1,0 +1,6 @@
+0 In
+1 Out
+2 And
+3 Or
+4 Xor
+5 Not
