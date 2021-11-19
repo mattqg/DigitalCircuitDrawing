@@ -5,7 +5,6 @@
 
 import json
 
-
 def unstringify(file_name):
     with open(file_name) as f:
         variables = json.load(f)
@@ -31,7 +30,6 @@ print(v)
 # v = dict (name, zoom, var ,etc)
 # d = list [button1, button2] -> for button1 list['button', dict] -> dict pos, width, output, etc
 stringify('test5.board', v)
-
 
 class Board:
     def __init__(self, name):
