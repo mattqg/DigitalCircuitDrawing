@@ -3,3 +3,5 @@ training_data
 venv
 __pycache__
 extras
+saves
+*.board

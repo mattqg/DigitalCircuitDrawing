@@ -1,7 +1,5 @@
 # todo: write object -> has all variables (name, etc.) except for list of variables
 # write module object that has name, position, input, output, etc
-# have model detect handwriting to pick object type then connect them to each other
-# start with and, or, not, xor
 
 import json
 
@@ -15,8 +13,8 @@ def unstringify(file_name):
     for obj in total_data:
         name = obj[0]
         data = obj[1]
-
-    return variables, total_data
+    
+    return variables
 
 
 def stringify(output_name, st):
@@ -24,12 +22,12 @@ def stringify(output_name, st):
         f.write(json.dumps(st))
         f.close()
 
-
-v, d = unstringify('test6.board')
+v = unstringify('extras/test6.board')
 print(v)
+
 # v = dict (name, zoom, var ,etc)
 # d = list [button1, button2] -> for button1 list['button', dict] -> dict pos, width, output, etc
-stringify('test5.board', v)
+stringify('test6.board', v)
 
 class Board:
     def __init__(self, name):
@@ -43,13 +41,23 @@ class Board:
     def add_button(self, button):
         self.data.append(button)
 
+    def stringify(self, output):
+        output_dict = {'name': self.name, 'offset': self.offset, 'zoom': self.zoom, 'variables': self.variables,
+         'variableReferences': self.variableReferences}
+        
+        formatted_data = [button.format() for button in self.data]
+        output_dict['data'] = json.dumps([formatted_data, []], separators=(',', ':'))
+
+        with open(f'saves/{output}.board', 'w') as f:
+            f.write(json.dumps(output_dict, separators=(',', ':')))
+
 
 class Button:
-    def __init__(self, type, id, name, pos, width, height, rotation, properties={}, input=[], output=[]):
+    def __init__(self, type, id, name, x, y, width, height, rotation, properties={}, input=[], output=[]):
         self.type = type
         self.id = id
         self.name = name
-        self.pos = pos
+        self.pos = {'x': x, 'y':y}
         self.width = width
         self.height = height
         self.rotation = rotation
@@ -71,9 +79,16 @@ class Button:
         add_dict['value'] = self.value
         self.output.append(add_dict)
 
+    def format(self):
+        # list['button', dict] -> dict pos, width, output, etc
+        info_dict = {'id': self.id, 'name': self.name, 'pos': self.pos, 'width': self.width, 'height': self.height, 'rotation': self.rotation, 'properties': self.properties, 'input': self.input, 'output': self.output}
+        return [self.type, (info_dict)]
 
-num_buttons = 2
-board = Board('test1')
-board.add_button(Button("Input", 0, "Input#0", (5, -2), 2, 1, 0,
-                        {}, [], [{"id": 1, "pos": {"side": 1, "pos": 0}, "value": 0}]))
-print(board.data[0].output)
+# num_buttons = 2
+# board = Board('test1')
+# board.add_button(Button("Input", 0, "Input#0", (5, -2), 2, 1, 0, {}, [], [{"id": 1, "pos": {"side": 1, "pos": 0}, "value": 0}]))
+# print(board.data[0].output)
+
+
+
+    
