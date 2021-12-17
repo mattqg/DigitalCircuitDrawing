@@ -7,8 +7,7 @@ if __name__ == "__main__":
     lines, words = parse_contours(image, cnts)
     word_imgs, positioned_words = parse_words(image, words)
     labeled_words = classify_words(image, word_imgs, positioned_words)    
- 
-    tree = branchify(base_image, lines, labeled_words, show_algorithm=True)
+    tree = branchify(base_image, lines, labeled_words)
     # board = structure(image, tree)
 
     # print(labels)

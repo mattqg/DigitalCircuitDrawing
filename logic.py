@@ -65,7 +65,6 @@ def branchify(image, lines, words, show_algorithm = False):
             if dist_right < lowest_right_dist:
                 selected_right = word
                 lowest_right_dist = dist_right
-                show_image(image)
 
             if show_algorithm:
                 cv2.line(image, word_pos[:2], left, (100,100,100), 1, lineType=cv2.LINE_AA)
@@ -99,8 +98,6 @@ def branchify(image, lines, words, show_algorithm = False):
                 show_image(image)
 
         image = blank_img.copy()
-
-        print('\n')
 
 def structure():
     pass
