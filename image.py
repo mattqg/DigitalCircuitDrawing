@@ -8,7 +8,7 @@ def inspect_image(input_name, show_input = False):
     image = cv2.imread("test_drawings/" + input_name + ".png")
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     invert = cv2.bitwise_not(gray)
-
+    base_image = image.copy()
     # find contours in the thresholded image
     cnts = cv2.findContours(invert.copy(), cv2.RETR_EXTERNAL,
                             cv2.CHAIN_APPROX_SIMPLE)
@@ -16,8 +16,7 @@ def inspect_image(input_name, show_input = False):
     if show_input:
         show_image(image)
 
-    return image, grab_contours(cnts)
-
+    return image, base_image, grab_contours(cnts)
 
 def show_image(img):
     screen_res = 1280, 720
@@ -84,7 +83,7 @@ def parse_contours(image, cnts, output= 'tests', x_sens = 6, y_sens = 0.5):
 
         # draw the contour white and center the shape on the image
         if ratio > 5:
-            lines.append({"contour": c, "left": (
+            lines.append({"cnt": c, "left": (
                 smallest[0], smallest[1]), "right": (largest[0], largest[1])})
 
             cv2.drawContours(image, [c], -1, (255, 255, 255), -1)
@@ -115,7 +114,7 @@ def parse_contours(image, cnts, output= 'tests', x_sens = 6, y_sens = 0.5):
 
 def parse_words(image, words, export_path = False, rect_output = False, show_outputs = False, starting_num = 1):
     images = []
-    positions = []
+    positioned_words = []
 
     for word in list(words.values()):
         cnts = np.concatenate(word)
@@ -147,8 +146,7 @@ def parse_words(image, words, export_path = False, rect_output = False, show_out
         if show_outputs == "each":
             show_image(roi_bordered_resized)
 
-        positions.append((x,y,w,h))        
+        positioned_words.append({'word': word,'pos':(int(x+w/2),int(y+h/2),x,y,w,h)})        
         images.append(roi_bordered_resized)
 
-    return np.asarray(images), positions
-
+    return np.asarray(images), positioned_words

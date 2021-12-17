@@ -3,7 +3,7 @@ from image import show_image
 import numpy as np
 import cv2
 
-def classify_words(image, word_imgs, positions, show=False):
+def classify_words(image, word_imgs, positioned_words, show=False):
     # Load the model
     model = load_model('model/keras_model.h5', compile=False)
 
@@ -21,9 +21,10 @@ def classify_words(image, word_imgs, positions, show=False):
     for i, predict in enumerate(prediction):
         index = np.argmax(predict)
         label = lookup[index]
-        pos = positions[i]
+        word = positioned_words[i]['word']
+        pos = positioned_words[i]['pos']
 
-        labels.append({'index': index, 'label': label, 'pos': pos})
+        labels.append({'index': index, 'label': label, 'cnt': word, 'pos': pos})
 
         if show:
             cv2.putText(image, label + " " + str(round(np.amax(predict),4)), (int(pos[0]), int(pos[1]-15)), cv2.FONT_HERSHEY_DUPLEX, 1, (255,0,0), lineType=cv2.LINE_AA)

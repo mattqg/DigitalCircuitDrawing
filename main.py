@@ -1,17 +1,28 @@
-from image import inspect_image, parse_contours, parse_words
-# from model import classify_words
-from parse import Board, Button, stringify
+from image import inspect_image, parse_contours, parse_words, show_image
+from model import classify_words
+from logic import branchify, structure
 
 if __name__ == "__main__":
-    image, cnts = inspect_image('test')
+    image, base_image, cnts = inspect_image('test')
     lines, words = parse_contours(image, cnts)
-    word_imgs, pos = parse_words(image, words)
-    # labels = classify_words(image, word_imgs, pos)    
-    board = Board('test3')
-    button = Button(type = "And", id = 0, name = "AND#0", x = 8, y =-4, width = 10, height = 10, rotation = 0)
-    board.add_button(button)
-    board.stringify('y')
+    word_imgs, positioned_words = parse_words(image, words)
+    labeled_words = classify_words(image, word_imgs, positioned_words)    
+ 
+    tree = branchify(base_image, lines, labeled_words, show_algorithm=True)
+    # board = structure(image, tree)
 
+    # print(labels)
+    # board = Board('')
+    # button = Button()
+    # board.add_button(button)
+    # board.stringify('y')
+    # while true:
+    #   check mouse pos
+    #   see if clicked
+    #   use base image
+    # 	if event == cv2.EVENT_LBUTTONDOWN:
+    #   elif event == cv2.EVENT_LBUTTONUP:
+    #   
     # TODO:
     # give id to each line
     # loop through lines, finding the word that is closest to each endpoint, add to dict with word key, line id value in list along w/ coords
