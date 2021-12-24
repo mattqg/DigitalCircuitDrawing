@@ -83,10 +83,10 @@ def parse_contours(image, cnts, output= 'tests', x_sens = 6, y_sens = 0.5):
 
         # draw the contour white and center the shape on the image
         if ratio > 5:
-            lines.append({"cnt": c, "left": (
+            lines.append({"cnt": [c], "left": (
                 smallest[0], smallest[1]), "right": (largest[0], largest[1])})
 
-            cv2.drawContours(image, [c], -1, (255, 255, 255), -1)
+            cv2.drawContours(image, c, -1, (255, 255, 255), -1)
 
         else:
             min_dist = np.inf
@@ -139,11 +139,11 @@ def parse_words(image, words, export_path = False, rect_output = False, show_out
             path = "training_data/" + export_path + "/" + export_path + "{}.png".format(starting_num)
             cv2.imwrite(path, roi_bordered_resized)
             starting_num += 1
-        elif show_outputs == "rect":
+        elif rect_output:
             cv2.rectangle(image, (x, y), (x + w - 1, y + h - 1), (150, 150, 150), 2)
             show_image(image)
         
-        if show_outputs == "each":
+        if show_outputs:
             show_image(roi_bordered_resized)
 
         positioned_words.append({'word': word,'pos':(int(x+w/2),int(y+h/2),x,y,w,h)})        

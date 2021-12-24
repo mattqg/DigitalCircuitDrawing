@@ -1,13 +1,21 @@
-from image import inspect_image, parse_contours, parse_words, show_image
+from image import inspect_image, parse_contours, parse_words
 from model import classify_words
-from logic import branchify, structure
+from logic import structure
+from runtime import check_mouse, propagate_logic
 
 if __name__ == "__main__":
-    image, base_image, cnts = inspect_image('test')
+    image, base_image, cnts = inspect_image('test1')
     lines, words = parse_contours(image, cnts)
     word_imgs, positioned_words = parse_words(image, words)
     labeled_words = classify_words(image, word_imgs, positioned_words)    
-    tree = branchify(base_image, lines, labeled_words)
+    root_words, graph= structure(base_image, lines, labeled_words, show_branches=True)
+
+    # while True:
+    #     clicked_word = check_mouse(root_words)
+    #     propagate_logic(clicked_word, graph)
+        
+
+
     # board = structure(image, tree)
 
     # print(labels)
