@@ -132,5 +132,5 @@ def structure(image, lines, words, show_algorithm = False, show_branches = False
     for word in word_list:
         if word not in children:
             root_words.append(word)
-    print(graph)
+    # print(graph)
     return root_words, graph

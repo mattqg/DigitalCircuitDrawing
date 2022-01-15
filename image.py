@@ -3,7 +3,6 @@ import cv2
 import numpy as np
 
 def inspect_image(input_name, show_input = False):
-
     # open image convert to grayscale
     image = cv2.imread("test_drawings/" + input_name + ".png")
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -18,7 +17,7 @@ def inspect_image(input_name, show_input = False):
 
     return image, base_image, grab_contours(cnts)
 
-def show_image(img):
+def show_image(img, wait = 0):
     screen_res = 1280, 720
     scale_width = screen_res[0] / img.shape[1]
     scale_height = screen_res[1] / img.shape[0]
@@ -27,11 +26,13 @@ def show_image(img):
     window_width = int(img.shape[1] * scale)
     window_height = int(img.shape[0] * scale)
     #cv2.WINDOW_NORMAL makes the output window resizealbe
-    cv2.namedWindow('Resized Window', cv2.WINDOW_NORMAL)
+    cv2.namedWindow('Digital Circuit Sim', cv2.WINDOW_NORMAL)
     #resize the window according to the screen resolution
-    cv2.resizeWindow('Resized Window', window_width, window_height)
-    cv2.imshow('Resized Window', img)
-    cv2.waitKey(0)
+    cv2.resizeWindow('Digital Circuit Sim', window_width, window_height)
+    cv2.imshow('Digital Circuit Sim', img)
+    cv2.waitKey(wait)
+
+
 
 
 def parse_contours(image, cnts, output= 'tests', x_sens = 6, y_sens = 0.5):
