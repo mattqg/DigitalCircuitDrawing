@@ -3,12 +3,27 @@ import builtins
 from image import show_image
 
 
-def setup_image(img, rw, graph):
+def run_sim(img, rw, graph, theme='material_dark'):
     show_image(img, wait=1)
     cv2.setMouseCallback('Digital Circuit Sim', find_mouse)
+    theme = select_color(theme)
+
+    if not builtins.first_run:
+        img[:] = theme['background']
+
+        for word_line in graph:
+            if word_line.label == "In":
+                cv2.drawContours(img, word_line.cnt, -1,
+                                 theme['in_off'], thickness=cv2.FILLED)
+            else:
+                cv2.drawContours(img, word_line.cnt, -1,
+                                 theme['off'], thickness=cv2.FILLED)
+        builtins.first_run = True
+
     builtins.rw = rw
     builtins.graph = graph
     builtins.img = img
+    builtins.theme = theme
 
 
 def find_mouse(event, x, y, flags, params):
@@ -20,6 +35,7 @@ def update_image(x, y):
     rw = builtins.rw
     graph = builtins.graph
     img = builtins.img
+    theme = builtins.theme
 
     for word in rw:
         w_x1 = word.corner_pos[0]
@@ -29,46 +45,41 @@ def update_image(x, y):
 
         if w_x1 <= x <= w_x2 and w_y1 <= y <= w_y2:
             word.flip_state()
-            print(f'Word Found at ID {word.id}')
-            # cv2.drawContours(img, word.cnt, -1, (255, 255, 0), thickness=cv2.FILLED)
+            print(f'Word Found at ID {word.id}, {word.label}')
 
-    propagate_states()
+    for word in rw:
+        propagate_states(word, word.state)
+    for word in rw:
+        propagate_states(word, word.state)
+
+    img[:] = theme['background']
 
     for word_line in graph:
+        # print(word_line.id, word_line.state)
         if word_line.state:
-            cv2.drawContours(img, word_line.cnt, -1, (255, 255, 0),
+            cv2.drawContours(img, word_line.cnt, -1, theme['on'],
                              thickness=cv2.FILLED)
         else:
-            cv2.drawContours(img, word_line.cnt, -1, (0, 0, 0),
-                             thickness=cv2.FILLED)
+            if word_line.label == "In":
+                cv2.drawContours(img, word_line.cnt, -1, theme['in_off'],
+                                 thickness=cv2.FILLED)
+            else:
+                cv2.drawContours(img, word_line.cnt, -1, theme['off'],
+                                 thickness=cv2.FILLED)
 
 
-def propagate_states():
-    pass
-
-# def get_click():
-#     try:
-#         click_x = builtins.x1
-#         click_y = builtins.y1
-#     except AttributeError:
-#         click_x = None
-#         click_y = None
-
-#     return (click_x, click_y)
+def propagate_states(word, prev_state):
+    for child in word.children:
+        child.update_state(prev_state, word.id)
+        if child.children:
+            propagate_states(child, child.state)
 
 
-# def propagate_logic(mouse_pos, root_words, graph):
-#     print(mouse_pos)
-
-# visitedList = [[]]
-
-# def depthFirst(graph, currentVertex, visited):
-#     visited.append(currentVertex)
-#     for vertex in graph[currentVertex]:
-#         if vertex not in visited:
-#             depthFirst(graph, vertex, visited.copy())
-#     visitedList.append(visited)
-
-# depthFirst(graph, 0, [])
-
-# print(visitedList)
+def select_color(theme):
+    colors = {'material_dark': {'background': (38, 32, 26),
+                                'on': (196, 203, 128),
+                                'off': (75, 75, 75),
+                                'in_off': (150, 150, 150),
+                                }
+              }
+    return colors[theme]
