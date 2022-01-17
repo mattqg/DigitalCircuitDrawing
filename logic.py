@@ -8,11 +8,17 @@ class Logic():
         self.label = label
         self.cnt = cnt
         self.pos = pos[:2]
+        self.corner_pos = pos[2:4]
         self.dim = pos[4:]
         self.children = []
+        self.state = False
 
     def add_child(self, child):
         self.children.append(child)
+
+    def flip_state(self):
+        self.state = not self.state
+
 
 class Line():
     def __init__(self, id, cnt, left, right):
@@ -21,6 +27,7 @@ class Line():
         self.left = left
         self.right = right
         self.children = []
+        self.state = False
 
     def add_child(self, child):
         self.children.append(child)
@@ -119,12 +126,13 @@ def structure(image, lines, words, show_algorithm = False, show_branches = False
     children = []
     graph = {}
     for line in line_list:
-        graph[line.id] = [x.id for x in line.children]
+        # changed line.id and x.id to line and x
+        graph[line] = [x for x in line.children]
         for sel_chidren in line.children:
             if sel_chidren not in children:
                 children.append(sel_chidren)
     for word in word_list:
-        graph[word.id] = [x.id for x in word.children]
+        graph[word] = [x for x in word.children]
         for sel_chidren in word.children:
             if sel_chidren not in children:
                 children.append(sel_chidren)

@@ -2,41 +2,41 @@ from imutils import grab_contours
 import cv2
 import numpy as np
 
-def inspect_image(input_name, show_input = False):
+
+def inspect_image(input_name, show_input=False):
     # open image convert to grayscale
     image = cv2.imread("test_drawings/" + input_name + ".png")
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     invert = cv2.bitwise_not(gray)
     base_image = image.copy()
     # find contours in the thresholded image
-    cnts = cv2.findContours(invert.copy(), cv2.RETR_EXTERNAL,
-                            cv2.CHAIN_APPROX_SIMPLE)
-    
+    cnts = cv2.findContours(invert.copy(), cv2.RETR_LIST,
+                            cv2.CHAIN_APPROX_NONE)
+
     if show_input:
         show_image(image)
 
     return image, base_image, grab_contours(cnts)
 
-def show_image(img, wait = 0):
+
+def show_image(img, wait=0):
     screen_res = 1280, 720
     scale_width = screen_res[0] / img.shape[1]
     scale_height = screen_res[1] / img.shape[0]
     scale = min(scale_width, scale_height)
-    #resized window width and height
+    # resized window width and height
     window_width = int(img.shape[1] * scale)
     window_height = int(img.shape[0] * scale)
-    #cv2.WINDOW_NORMAL makes the output window resizealbe
+    # cv2.WINDOW_NORMAL makes the output window resizealbe
     cv2.namedWindow('Digital Circuit Sim', cv2.WINDOW_NORMAL)
-    #resize the window according to the screen resolution
+    # resize the window according to the screen resolution
     cv2.resizeWindow('Digital Circuit Sim', window_width, window_height)
     cv2.imshow('Digital Circuit Sim', img)
     cv2.waitKey(wait)
 
 
-
-
-def parse_contours(image, cnts, output= 'tests', x_sens = 6, y_sens = 0.5):
-     # array to capture data
+def parse_contours(image, cnts, output='tests', x_sens=6, y_sens=0.5):
+    # array to capture data
     lines = []
     words = {}
 
@@ -67,7 +67,7 @@ def parse_contours(image, cnts, output= 'tests', x_sens = 6, y_sens = 0.5):
         # loop through sets of points and take distance between them
         for i in range(4):
             length = np.sqrt((box[i][0] - box[i-1][0])**2 +
-                            (box[i][1] - box[i-1][1])**2)
+                             (box[i][1] - box[i-1][1])**2)
             if length <= min_length:
                 min_length = length
 
@@ -99,7 +99,8 @@ def parse_contours(image, cnts, output= 'tests', x_sens = 6, y_sens = 0.5):
                 y = word_key[1]
 
                 # weighted euclidian distance
-                dist = np.sqrt((1/x_sens)*abs(cX-x)**2 + (1/y_sens)*abs(cY-y)**2)
+                dist = np.sqrt((1/x_sens)*abs(cX-x)**2 +
+                               (1/y_sens)*abs(cY-y)**2)
 
                 if dist < min_dist:
                     selected_key = word_key
@@ -110,10 +111,11 @@ def parse_contours(image, cnts, output= 'tests', x_sens = 6, y_sens = 0.5):
             else:
                 words[(cX, cY)] = [c]
                 first_counted = True
-    
+
     return lines, words
 
-def parse_words(image, words, export_path = False, rect_output = False, show_outputs = False, starting_num = 1):
+
+def parse_words(image, words, export_path=False, rect_output=False, show_outputs=False, starting_num=1):
     images = []
     positioned_words = []
 
@@ -137,17 +139,20 @@ def parse_words(image, words, export_path = False, rect_output = False, show_out
         roi_bordered_resized = cv2.resize(roi_bordered, (224, 224))
 
         if export_path and isinstance(export_path, str):
-            path = "training_data/" + export_path + "/" + export_path + "{}.png".format(starting_num)
+            path = "training_data/" + export_path + "/" + \
+                export_path + "{}.png".format(starting_num)
             cv2.imwrite(path, roi_bordered_resized)
             starting_num += 1
         elif rect_output:
-            cv2.rectangle(image, (x, y), (x + w - 1, y + h - 1), (150, 150, 150), 2)
+            cv2.rectangle(image, (x, y), (x + w - 1, y + h - 1),
+                          (150, 150, 150), 2)
             show_image(image)
-        
+
         if show_outputs:
             show_image(roi_bordered_resized)
 
-        positioned_words.append({'word': word,'pos':(int(x+w/2),int(y+h/2),x,y,w,h)})        
+        positioned_words.append(
+            {'word': word, 'pos': (int(x+w/2), int(y+h/2), x, y, w, h)})
         images.append(roi_bordered_resized)
 
     return np.asarray(images), positioned_words
